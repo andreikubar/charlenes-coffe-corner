@@ -3,6 +3,12 @@ Charlene's Coffee Corner
 
 This is a console application.
 
+### Build
+Build using maven
+```
+mvn install
+```
+
 ### Usage
 Start by running in the command line
 ```
@@ -38,7 +44,7 @@ Choose extra:
 Enter option: 
 ```
 
-After adding a selection of products is added to the order, order can be completed, e.g.:
+After a selection of products is added into the order, order can be completed, e.g.:
 ```
 Complete order? y/n
 ```
