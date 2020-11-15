@@ -2,24 +2,19 @@ package com.company.model;
 
 
 import com.company.Selection;
-import org.junit.Before;
+import com.company.model.coffeeextras.FoamedMilkExtra;
 import org.junit.Test;
+
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
 public class OrderTest {
-
-    private ProductDao productDao;
-
-    @Before
-    public void setUp() {
-        productDao = new ProductDao();
-    }
-
+    
     @Test
     public void beverageAndSnackCombo_extraIsFreeBonus() {
-        Product beverage = getRandomBeverage();
-        Product snack = getRandomSnack();
+        Product beverage = createBeverageWithAnExtra();
+        Product snack = createSnack();
         Offering extra = beverage.getExtras().get(0);
         Order order = new Order();
         Selection selection = buildSelection(beverage, snack, extra);
@@ -31,8 +26,8 @@ public class OrderTest {
 
     @Test
     public void beverageFree_withStampBonus() {
-        Product beverage = getRandomBeverage();
-        Product snack = getRandomSnack();
+        Product beverage = createBeverageWithAnExtra();
+        Product snack = createSnack();
         Selection selection = buildSelection(beverage, snack);
         Order order = new Order();
         order.addSelection(selection);
@@ -44,8 +39,8 @@ public class OrderTest {
 
     @Test
     public void stampCard_and_comboBonus() {
-        Product beverage = getRandomBeverage();
-        Product snack = getRandomSnack();
+        Product beverage = createBeverageWithAnExtra();
+        Product snack = createSnack();
         Offering extra = beverage.getExtras().get(0);
         Order order = new Order();
         Selection selection = buildSelection(beverage, snack, extra);
@@ -64,12 +59,19 @@ public class OrderTest {
         return selection;
     }
 
-    private Product getRandomBeverage() {
-        return productDao.getProductsByCategory().get(OfferingCategory.BEVERAGE).get(0);
+    private Product createBeverageWithAnExtra() {
+        return new Product.Builder("Test beverage 1")
+                .withExtras(List.of(new FoamedMilkExtra()))
+                .withPrice(2.0)
+                .withProductCategory(OfferingCategory.BEVERAGE)
+                .build();
     }
 
-    private Product getRandomSnack() {
-        return productDao.getProductsByCategory().get(OfferingCategory.SNACK).get(0);
+    private Product createSnack() {
+        return new Product.Builder("Test snak 1")
+                .withPrice(3.0)
+                .withProductCategory(OfferingCategory.SNACK)
+                .build();
     }
 
 }
