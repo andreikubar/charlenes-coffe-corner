@@ -51,11 +51,11 @@ Complete order? y/n
 After entering 'y', the final receipt is printed out showing the total price of the order, e.g.:
 ```
 Order:
-----------------------------------------
-Large Coffee                   3.50 CHF
-Bacon Roll                     4.50 CHF
-----------------------------------------
-Total                          8.00 CHF
+Product                          Price Discount   Final
+Large Coffee                      3,50    0,00    3,50
+Bacon Roll                        4,50    0,00    4,50
+------------------------------------------------------
+Total                                             8,00
 ```
 
 #### Bonuses
@@ -73,13 +73,13 @@ Choose a matching product:
 
 Enter option: 
 ```
-If there are beverage with an extra and a snack selected together, the extra will get the price of 0 CHF, e.g.:
+If there are beverage with an extra and a snack selected together, one extra (most expensive) will be discounted, e.g.:
 ```
 Order:
-----------------------------------------
-Small Coffee                   2.50 CHF
-Extra milk                     0.00 CHF
-Bacon Roll                     4.50 CHF
+Product                          Price Discount   Final
+Small Coffee                      2,50    0,00    2,50
+Extra milk                        0,30   -0,30    0,00
+Bacon Roll                        4,50    0,00    4,50
 ```
 
 ##### Stamp card bonus
@@ -88,11 +88,15 @@ This bonus can be applied at the end, when the order is being finished. E.g.:
  ```
 Apply 5th beverage free bonus? y/n
 ```
-If 'y' is entered, the price of a beverage becomes 0 CHF, e.g.:
+If 'y' is entered, one beverage (most expensive) will get discounted, e.g.:
 ```
 Order:
-----------------------------------------
-Small Coffee                   0.00 CHF
-Bacon Roll                     4.50 CHF
+Product                          Price Discount   Final
+Large Coffee                      3,50    0,00    3,50
+Extra milk                        0,30   -0,30    0,00
+Bacon Roll                        4,50    0,00    4,50
+Freshly squeezed orange juice     3,95   -3,95    0,00
+------------------------------------------------------
+Total                                             8,00
 ```
 

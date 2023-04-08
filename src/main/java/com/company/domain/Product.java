@@ -1,20 +1,20 @@
-package com.company.model;
+package com.company.domain;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Product implements Offering {
+public class Product {
 
     private final Double price;
     private final String name;
-    private final List<ProductExtra> extras;
-    private final OfferingCategory offeringCategory;
+    private final List<Product> extras;
+    private final ProductCategory productCategory;
 
     private Product(Builder builder) {
         this.name = builder.name;
         this.price = builder.price;
         this.extras = builder.extras;
-        this.offeringCategory = builder.offeringCategory;
+        this.productCategory = builder.productCategory;
     }
 
     public String getName() {
@@ -29,20 +29,19 @@ public class Product implements Offering {
         return this.extras != null && this.extras.size() > 0;
     }
 
-    public List<ProductExtra> getExtras() {
+    public List<Product> getExtras() {
         return this.extras;
     }
 
-    @Override
-    public OfferingCategory getOfferingCategory() {
-        return offeringCategory;
+    public ProductCategory getProductCategory() {
+        return productCategory;
     }
 
     public static class Builder {
         private final String name;
         private Double price;
-        private List<ProductExtra> extras;
-        private OfferingCategory offeringCategory;
+        private List<Product> extras;
+        private ProductCategory productCategory;
 
         public Builder(String name) {
             this.name = name;
@@ -53,7 +52,7 @@ public class Product implements Offering {
             return this;
         }
 
-        public Builder withExtras(List<ProductExtra> extras) {
+        public Builder withExtras(List<Product> extras) {
             if (this.extras == null) {
                 this.extras = new ArrayList<>();
             }
@@ -61,8 +60,8 @@ public class Product implements Offering {
             return this;
         }
 
-        public Builder withProductCategory(OfferingCategory offeringCategory) {
-            this.offeringCategory = offeringCategory;
+        public Builder withProductCategory(ProductCategory productCategory) {
+            this.productCategory = productCategory;
             return this;
         }
 

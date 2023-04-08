@@ -1,6 +1,7 @@
 package com.company;
 
-import com.company.model.ProductDao;
+import com.company.ctrl.OrderController;
+import com.company.dao.ProductDao;
 
 public class Main {
 

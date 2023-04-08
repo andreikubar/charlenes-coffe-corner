@@ -1,14 +1,16 @@
-package com.company;
+package com.company.ctrl;
 
-import com.company.model.*;
+import com.company.dao.ProductDao;
+import com.company.domain.*;
 
 import java.io.IOException;
 import java.util.*;
 
 public class OrderController {
 
-    private static final int RECEIPT_WIDTH = 40;
-    private static final String ORDER_POSITION_LINE = "%-30s %.2f CHF";
+    private static final int RECEIPT_WIDTH = 54;
+    private static final String ORDER_POSITION_HEADER = "%-30s %7s %7s %7s";
+    private static final String ORDER_POSITION_LINE = "%-30s %7.2f %7.2f %7.2f";
     private final Scanner scanner = new Scanner(System.in);
 
     private Order order;
@@ -34,53 +36,20 @@ public class OrderController {
         clearScreen();
         Selection selection = new Selection();
         System.out.println("Choose product:\n");
-        Offering addedItem = addProduct(selection, productDao.getProductOfferings());
-        addMatchingCombo(selection, addedItem);
+        Product selectedItem = selectProduct(productDao.getProductOfferings());
+        selection.addItem(selectedItem);
+        if (selectedItem.hasExtras()) {
+            selectExtra(selectedItem).ifPresent(selection::addItem);
+        }
+        selectMatchingCombo(selectedItem).ifPresent(selection::addItem);
         order.addSelection(selection);
         printOrderList();
     }
 
-    private Offering addProduct(Selection selection, List<Product> offerings) {
-        Offering selectedItem = selectOrderItem(offerings);
-        selection.addItem(selectedItem);
-        addExtras(selectedItem, selection);
-        return selectedItem;
-    }
 
-    private void addExtras(Offering selectedItem, Selection selection) {
-        if (selectedItem instanceof Product) {
-            Product selectedProduct = (Product) selectedItem;
-            if (selectedProduct.hasExtras()) {
-                if (addExtra()) {
-                    clearScreen();
-                    System.out.println("Choose extra:\n");
-                    Offering selectedExtra = selectOrderItem(selectedProduct.getExtras());
-                    selection.addItem(selectedExtra);
-                }
-            }
-        }
-    }
-
-    private void addMatchingCombo(Selection selection, Offering selectedItem) {
-        List<Product> comboOfferings;
-        if (selectedItem.getOfferingCategory() == OfferingCategory.BEVERAGE) {
-            comboOfferings = productDao.getProductsByCategory().get(OfferingCategory.SNACK);
-        } else {
-            comboOfferings = productDao.getProductsByCategory().get(OfferingCategory.BEVERAGE);
-        }
-        clearScreen();
-        System.out.println("\nAdd a matching combo? y/n");
-        String answer = scanner.next();
-        if (answer.equalsIgnoreCase("y")) {
-            clearScreen();
-            System.out.println("Choose a matching product:\n");
-            addProduct(selection, comboOfferings);
-        }
-    }
-
-    private Offering selectOrderItem(List<? extends Offering> offerings) {
-        Map<Integer, ? extends Offering> orderItemMap = asMap(offerings);
-        for (Map.Entry<Integer, ? extends Offering> offering : orderItemMap.entrySet()) {
+    private Product selectProduct(List<? extends Product> offerings) {
+        Map<Integer, ? extends Product> orderItemMap = asMap(offerings);
+        for (Map.Entry<Integer, ? extends Product> offering : orderItemMap.entrySet()) {
             System.out.printf("%d %s at %.2f CHF\n", offering.getKey(), offering.getValue().getName(),
                     offering.getValue().getPrice());
         }
@@ -89,7 +58,34 @@ public class OrderController {
         return orderItemMap.get(menuNumber);
     }
 
-    private boolean addExtra() {
+    private Optional<Product> selectExtra(Product selectedItem) {
+        if (needExtra()) {
+            clearScreen();
+            System.out.println("\nChoose an extra:\n");
+            return Optional.of(selectProduct(selectedItem.getExtras()));
+        }
+        return Optional.empty();
+    }
+
+    private Optional<Product> selectMatchingCombo(Product selectedItem) {
+        List<Product> comboOfferings;
+        if (selectedItem.getProductCategory() == ProductCategory.BEVERAGE) {
+            comboOfferings = productDao.getProductsByCategory().get(ProductCategory.SNACK);
+        } else {
+            comboOfferings = productDao.getProductsByCategory().get(ProductCategory.BEVERAGE);
+        }
+        clearScreen();
+        System.out.println("\nAdd a matching combo? y/n");
+        String answer = scanner.next();
+        if (answer.equalsIgnoreCase("y")) {
+            clearScreen();
+            System.out.println("\nChoose a matching product:\n");
+            return Optional.of(selectProduct(comboOfferings));
+        }
+        return Optional.empty();
+    }
+
+    private boolean needExtra() {
         System.out.print("\nAdd an extra? y/n ");
         String answer = scanner.next();
         return answer.equalsIgnoreCase("y");
@@ -105,7 +101,7 @@ public class OrderController {
         System.out.print("\nApply 5th beverage free bonus? y/n ");
         String answer = scanner.next();
         if (answer.equalsIgnoreCase("y")) {
-            order.applyStampCardBonus();
+            order.setStampCardApplied();
         }
     }
 
@@ -117,18 +113,32 @@ public class OrderController {
     private void printFinalReceipt() {
         System.out.println(formatOrderList());
         System.out.println("-".repeat(RECEIPT_WIDTH));
-        System.out.printf(ORDER_POSITION_LINE, "Total", order.getTotalPrice());
+        System.out.printf("%-46s %7.2f", "Total", order.getTotalPrice());
     }
 
     private String formatOrderList() {
         StringBuilder outputBuilder = new StringBuilder();
         outputBuilder.append("Order:\n");
-        outputBuilder.append("-".repeat(RECEIPT_WIDTH));
+        outputBuilder.append(String.format(ORDER_POSITION_HEADER, "Product", "Price", "Discount", "Final"));
         for (OrderPosition orderItem : order.getOrderItems()) {
+            OrderDiscount oderItemDiscount = findMatchingDiscount(orderItem);
             outputBuilder.append("\n").append(String.format(ORDER_POSITION_LINE, orderItem.getName(),
-                    orderItem.getPrice()));
+                    orderItem.getPrice(),
+                    0 - oderItemDiscount.getDiscountedAmount(),
+                    orderItem.getPrice() - oderItemDiscount.getDiscountedAmount()));
         }
         return outputBuilder.toString();
+    }
+
+    private OrderDiscount findMatchingDiscount(OrderPosition orderItem) {
+        return order.getOrderDiscounts().stream()
+                .filter(orderDiscount -> orderDiscount.getOrderPosition().equals(orderItem))
+                .findFirst()
+                .orElse(dummyDiscount());
+    }
+
+    private OrderDiscount dummyDiscount() {
+        return new OrderDiscount(null, 0.0);
     }
 
     private static <T> Map<Integer, T> asMap(List<T> orderItems) {
