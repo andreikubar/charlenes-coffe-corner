@@ -1,10 +1,11 @@
 package com.company.domain;
 
 import com.company.ctrl.Selection;
-import com.company.dao.OrderDao;
-import com.company.dao.ProductDao;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class Order {
@@ -81,11 +82,8 @@ public class Order {
 
     private static List<OrderPosition> toOrderPositions(Selection selection) {
         return selection.getSelectedItems().stream()
-                .map(Order::toOrderPosition).collect(Collectors.toList());
-    }
-
-    private static OrderPosition toOrderPosition(Product selectedItem) {
-        return new OrderPosition(OrderDao.getNextOrderPositionId(), selectedItem.getPrice(), selectedItem.getName(), selectedItem.getProductCategory());
+                .map(OrderPosition::fromProduct)
+                .collect(Collectors.toList());
     }
 
 }

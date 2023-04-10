@@ -3,6 +3,7 @@ package com.company.domain;
 import java.util.Objects;
 
 public class OrderPosition  {
+    private static int orderPositionId = 1;
     private final int id;
     private final Double price;
     private final String name;
@@ -15,8 +16,8 @@ public class OrderPosition  {
         this.productCategory = productCategory;
     }
 
-    public int getId() {
-        return id;
+    public static OrderPosition fromProduct(Product product) {
+        return new OrderPosition(orderPositionId++, product.getPrice(), product.getName(), product.getProductCategory());
     }
 
     public Double getPrice() {
